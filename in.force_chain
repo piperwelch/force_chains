@@ -1,0 +1,52 @@
+units           si
+boundary        f f p
+atom_style      sphere
+dimension       2
+
+read_data       data_file
+
+neighbor        1 multi
+comm_modify     mode multi vel yes reduce/multi
+region          box block 0.001 49.99 0 44.641 -5 5
+
+
+# Pair style for granular interactions
+pair_style      granular
+pair_coeff      1 1 hooke 0.9 0.01 tangential linear_history 1.0 0.01 0.1 damping mass_velocity
+pair_coeff      2 2 hooke 12 0.01 tangential linear_history 1.0 0.01 0.1 damping mass_velocity
+pair_coeff      3 3 hooke 1 0.01 tangential linear_history 1.0 0.01 0.1 damping mass_velocity
+
+
+fix             box all wall/gran/region hooke/history 40.0 NULL 1 NULL 0.5 1 region box
+
+fix             2 all nve/sphere
+fix             3 all enforce2d
+
+timestep        0.05
+
+run             1000
+
+group           source id 23 22 21 20 19 
+fix             4 source addforce 0.0 -2.0 0.0 every 10
+group           center id 12
+timestep        0.05
+
+
+
+variable new_radius equal 10.00
+
+dump            2 all custom 100 out.dump id x y z fx fy fz radius
+
+run 50000
+
+#label loop
+  # Update diameter
+ # set group center diameter ${new_radius}
+
+  #run 100
+
+  #variable new_radius equal ${new_radius}+0.5*cos(2*3.14*1*step)
+  #variable new_radius equal ${new_radius}+0.1
+
+  #variable current_step equal step
+  #if ${current_step}<10000 then "jump SELF loop"
