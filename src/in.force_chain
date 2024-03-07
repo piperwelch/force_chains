@@ -1,0 +1,44 @@
+units           si
+boundary        f f p
+atom_style      sphere
+dimension       2
+
+read_data       ${data_file}
+
+neighbor        1 multi
+comm_modify     mode multi vel yes reduce/multi
+region          box block 0.001 49.99 0 44.641 -5 5
+
+
+# Pair style for granular interactions
+pair_style      granular
+pair_coeff      1 1 hertz 650000 1 tangential linear_history 185714.285 0.5 0.0 damping mass_velocity
+pair_coeff      2 2 hertz 1562500 1 tangential linear_history 446428.57 0.5 0.0 damping mass_velocity
+
+
+fix             box all wall/gran/region hooke/history 2000.0 NULL 1 NULL 0.5 1 region box
+
+fix             2 all nve/sphere
+fix             3 all enforce2d
+
+timestep        0.0005
+
+run             1000
+
+#group          source id 1 2 3 4 5
+
+group           source id 23 22 21 20 19 
+fix             4 source addforce 0.0 -100.0 0.0 every 1
+
+timestep        0.01
+
+group           target id ${output_node}
+
+variable new_radius equal 10.00
+ 
+#dump            2 target custom 100 ${dump_folder}/dump.force_chain_id${id}_seed${seed} id fy 
+
+if "${visualize} == True" then 'dump            3 all custom 10 out.dump id x y z radius fy'
+timestep        0.0001
+
+run 100000

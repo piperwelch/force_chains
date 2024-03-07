@@ -1,0 +1,166 @@
+LAMMPS (21 Nov 2023)
+units           si
+boundary        f f p
+atom_style      sphere
+dimension       2
+
+read_data       ${data_file}
+read_data       data_file
+Reading data file ...
+  triclinic box = (0 0 -5) to (50 50 5) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  23 atoms
+  read_data CPU = 0.005 seconds
+
+neighbor        1 multi
+comm_modify     mode multi vel yes reduce/multi
+region          box block 0.001 49.99 0 44.641 -5 5
+
+
+# Pair style for granular interactions
+pair_style      granular
+pair_coeff      1 1 hertz 650000 1 tangential linear_history 185714.285 0.5 0.0 damping mass_velocity
+pair_coeff      2 2 hertz 1562500 1 tangential linear_history 446428.57 0.5 0.0 damping mass_velocity
+
+
+fix             box all wall/gran/region hooke/history 2000.0 NULL 1 NULL 0.5 1 region box
+
+fix             2 all nve/sphere
+fix             3 all enforce2d
+
+timestep        0.0005
+
+run             1000
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+
+- neighbor multi command: doi:10.1016/j.cpc.2008.03.005, doi:10.1007/s40571-020-00361-2
+
+@Article{Intveld08,
+ author =  {in 't Veld, P. J. and S. J.~Plimpton and G. S. Grest},
+ title =   {Accurate and Efficient Methods for Modeling Colloidal
+            Mixtures in an Explicit Solvent using Molecular Dynamics},
+ journal = {Comput.\ Phys.\ Commut.},
+ year =    2008,
+ volume =  179,
+ pages =   {320--329}
+}
+
+@article{Shire2020,
+ author = {Shire, Tom and Hanley, Kevin J. and Stratford, Kevin},
+ title = {{DEM} Simulations of Polydisperse Media: Efficient Contact
+          Detection Applied to Investigate the Quasi-Static Limit},
+ journal = {Computational Particle Mechanics},
+ year = {2020}
+@article{Monti2022,
+ author = {Monti, Joseph M. and Clemmer, Joel T. and Srivastava, 
+           Ishan and Silbert, Leonardo E. and Grest, Gary S. 
+           and Lechman, Jeremy B.},
+ title = {Large-scale frictionless jamming with power-law particle 
+          size distributions},
+ journal = {Phys. Rev. E},
+ volume = {106}
+ issue = {3}
+ year = {2022}
+}
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 11
+  ghost atom cutoff = 11
+  binsize = 5.5, bins = 10 10 2
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair granular, perpetual
+      attributes: half, newton on, size, history
+      pair build: half/size/multi/newton/tri
+      stencil: half/multi/2d/tri
+      bin: multi
+Per MPI rank memory allocation (min/avg/max) = 11.31 | 11.31 | 11.31 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+         0   0              0              0              0              0            
+      1000   1.0995793e+20  0              0              0.033398961    0.44801425   
+Loop time of 0.0209138 on 1 procs for 1000 steps with 23 atoms
+
+78.3% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.0097956  | 0.0097956  | 0.0097956  |   0.0 | 46.84
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0020325  | 0.0020325  | 0.0020325  |   0.0 |  9.72
+Output  | 5.3027e-05 | 5.3027e-05 | 5.3027e-05 |   0.0 |  0.25
+Modify  | 0.0057737  | 0.0057737  | 0.0057737  |   0.0 | 27.61
+Other   |            | 0.003259   |            |       | 15.58
+
+Nlocal:             23 ave          23 max          23 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:              0 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:             50 ave          50 max          50 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 50
+Ave neighs/atom = 2.173913
+Neighbor list builds = 0
+Dangerous builds = 0
+
+#group          source id 1 2 3 4 5
+
+group           source id 23 22 21 20 19
+5 atoms in group source
+fix             4 source addforce 0.0 -100.0 0.0 every 1
+
+timestep        0.01
+
+group           target id ${output_node}
+group           target id 3
+1 atoms in group target
+
+variable new_radius equal 10.00
+
+#dump            2 target custom 100 ${dump_folder}/dump.force_chain_id${id}_seed${seed} id fy
+
+if "${visualize} == True" then 'dump            3 all custom 10 out.dump id x y z radius fy'
+dump            3 all custom 10 out.dump id x y z radius fy
+timestep        0.0005
+
+run 100000
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Per MPI rank memory allocation (min/avg/max) = 11.31 | 11.31 | 11.31 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+      1000   1.0995793e+20  0              0              0.033398961    0.44800106   
+    101000   1.0445377e+19  0              0              0.003172711    4.8281671    
+Loop time of 2.46186 on 1 procs for 100000 steps with 23 atoms
+
+80.1% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.79908    | 0.79908    | 0.79908    |   0.0 | 32.46
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.1877     | 0.1877     | 0.1877     |   0.0 |  7.62
+Output  | 0.69163    | 0.69163    | 0.69163    |   0.0 | 28.09
+Modify  | 0.472      | 0.472      | 0.472      |   0.0 | 19.17
+Other   |            | 0.3114     |            |       | 12.65
+
+Nlocal:             23 ave          23 max          23 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:              0 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:             50 ave          50 max          50 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 50
+Ave neighs/atom = 2.173913
+Neighbor list builds = 0
+Dangerous builds = 0
+Total wall time: 0:00:02
