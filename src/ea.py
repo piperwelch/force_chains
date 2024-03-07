@@ -115,8 +115,8 @@ class Material:
 
 
     def get_fitness(self, fy):
-        self.fitness1 = sum(fy)/len(fy)
-        self.fitness2 = sum(fy)/len(fy)
+        self.fitness1 = min(fy)
+        self.fitness2 = min(fy)
         print(self.id, self.fitness1)
 
 
@@ -189,8 +189,8 @@ class EA:
 
     def run_generation_one(self):
 
-        # for material in self.population:
-        #     material.write_data()
+        for material in self.population:
+            material.write_data()
 
         for i in range(0, len(self.population), 10):
             run_batch = self.population[i:i+10]  # Get the segment of length 10
@@ -201,7 +201,7 @@ class EA:
         for material in self.population:
             y_forces = material.read_sim()
             material.get_fitness(y_forces[self.output])
-        quit()
+        # quit()
         self.generation+=1
 
         os.system(f"rm -rf ../data_ins/*seed{self.seed}")

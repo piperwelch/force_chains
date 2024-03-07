@@ -28,17 +28,17 @@ run             1000
 #group          source id 1 2 3 4 5
 
 group           source id 23 22 21 20 19 
-fix             4 source addforce 0.0 -100.0 0.0 every 1
+fix             4 source addforce 0.0 -10.0 0.0 every 1
 
-timestep        0.01
+timestep        0.0001
 
 group           target id ${output_node}
 
-variable new_radius equal 10.00
+#variable new_radius equal 10.00
  
-#dump            2 target custom 100 ${dump_folder}/dump.force_chain_id${id}_seed${seed} id fy 
+dump            2 all custom 100 ${dump_folder}/dump.force_chain_id${id}_seed${seed} id fy
 
 if "${visualize} == True" then 'dump            3 all custom 10 out.dump id x y z radius fy'
 timestep        0.0001
 
-run 100000
+run 10000
